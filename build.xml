@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="jSim" default="build">
+	<property name="project.dir" location="." />
+	<property name="lib.dir" location="lib" />
+	<property name="build.dir" location="bin" />
+	<property name="src.dir" location="src" />
+	
+	<path id="libraries">
+		<fileset dir="${lib.dir}" includes="**/*.jar" />
+	</path>
+	
+	<target name="build">
+		<echo message="Building ${src.dir}" />
+		<javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="libraries"/>
+	</target>
+	
+</project>
