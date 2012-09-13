@@ -5,6 +5,7 @@ import org.junit.Test;
 import junit.framework.TestCase;
 import mi.poker.calculation.EquityCalculation;
 import mi.poker.calculation.HandInfo;
+import mi.poker.calculation.MonteCarloSimulation;
 import mi.poker.calculation.Result;
 
 public class EquityCalculationTest extends TestCase {

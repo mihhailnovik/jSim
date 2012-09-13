@@ -1,4 +1,4 @@
 Equity calculation library. Works in the same way like PokerStove. Uses klaatu poker eval library.
 
 You can see sample in Main.java and tests/mi/poker/tests/calculation/EquityCalculationTest.java
-Big thank to http://www.codingthewheel.com/archives/multiway-ranged-isometric-equity-calculation-in-poker-1 and pokerai.org forum. 
+Big thank to http://www.codingthewheel.com/archives/multiway-ranged-isometric-equity-calculation-in-poker-1 and pokerai.org forum. =) 

@@ -56,6 +56,8 @@ public class MonteCarloSimulation implements Calculation {
 	
 	public Result calculateMonteCarlo(List<Integer> rangeHandId,List<Integer> randomHandId, CardSet baseDeck,
 			CardSet currentHands[], CardSet staticBoard, Result result,CardSet possibleHands[][] ,int trials) {
+		
+	
 		for (int i = 0;i<trials;i++){ // lets simulate
 			Collections.shuffle(rangeHandId);
 			CardSet currentDeck = new CardSet(baseDeck);
