@@ -26,7 +26,9 @@ public class HandParser {
 	/**
 	 * @param hands
 	 *            , sample format JcJh, 8s7s,
-	 *            99+|AJs+,QQ|AQs+|AQo,XxXx,XxXx,XxXx,XxXx
+	 *            99+|AJs+,QQ+|AQs+|AQo,XxXx,XxXx,XxXx,XxXx.
+         *            The hand(s) of each player is (are) separated by a comma.
+         *            In the range description, it is not allowed to use interval such as A7o-ATo.
 	 * @return double array of hands, with possible variations
 	 */
 	public static CardSet[][] parsePlayersHands(String hands) {
@@ -54,16 +56,19 @@ public class HandParser {
 	}
 
 	/**
-	 * return's a hand format type
+	 * @param String hand
+     * @return hand format type:
 	 * "9d9s" - EXACTLY_TYPE 
 	 * "99+","ATs+","ATo+" - RANGE_TYPE 
 	 * "ATo" - PATTERN_TYPE
-	 * "XxXx" - RANGOM_TYPE
+	 * "XxXx" - RANDOM_TYPE
+         * In the range description, it is not allowed to use interval such as A7o-ATo.
 	 * public only because of junit test, so no need to use outside this class
 	 */
 	public static int getType(String variant) {
 		variant = StringUtils.trim(variant);
 		if (variant.endsWith("+")){
+//		if ((variant.endsWith("+")) || (variant.indexOf('-')!=-1)) {
 			return RANGE_TYPE;
 		}
 		int length = variant.length();
@@ -78,14 +83,17 @@ public class HandParser {
 			}
 		}
 		if (length == 3 || length == 2) {
-				return PATTERN_SUIT_TYPE;//ATo
+				return PATTERN_SUIT_TYPE;
 		}
 		throw new RuntimeException("Invalid variant = " + variant); 
 	}
 
 	/**
-	 * sample inputs "JcJh","99+|AJs+","QQ+|AQs+|AQo+"
-	 * returns all of possible hands for sppecified input
+	 * @param possibleCards hand range description of only one player, e.g inputs like
+         * "JcJh","99+|AJs+","QQ+|AQs+|AQo+".
+         * In the range description, it is not allowed to use interval such as A7o-ATo.
+         * It is not possible to use 22+.
+	 * @return all of possible hands for specified input
 	 */
 	public static CardSet[] parsePossibleHands(String possibleCards) {
 		possibleCards = StringUtils.remove(possibleCards, " ");
@@ -110,6 +118,7 @@ public class HandParser {
 				case RANGE_TYPE:// AJs+
 				{
 					CollectionUtil.addAll(hands,RangeStrategy.getDefaultRangeStrategy().getRange(variant));
+                                        // clairement à modifier AJs+ n'est pas interprêté comme AKs, AQs et AJs !!
 					break;
 				}
 				case RANDOM_TYPE:{ 
@@ -123,8 +132,11 @@ public class HandParser {
 		return result;
 	}
 	
-	// input sample "AA", "TT", "33"
-	private static CardSet[] parsePair(String cardPattern){
+	/**
+	 * @param cardPattern input like "AA", "TT" or "22".
+	 * @return array of CardSet
+	 */
+	public static CardSet[] parsePair(String cardPattern){
 		char rank = cardPattern.charAt(0);
 		String[] cards = new String[4];
 		int i = 0;
@@ -141,52 +153,94 @@ public class HandParser {
 		};
 	}
 	
-	private static CardSet[] parseNonPair(String cardPattern){
-		char suitedOrNot = cardPattern.charAt(2);
-		if (suitedOrNot == 's'){
-			CardSet tempHands[] = new CardSet[4];
-			int i = 0;
-			for (char c : SUITS) {
-				tempHands[i++] = HandUtil.buildTwoCardHand(Character.toString(cardPattern.charAt(0)) + c, 
-						Character.toString(cardPattern.charAt(1)) + c);
-			}
-			return tempHands;
-		}
+        /**
+	 * @param cardPattern input like "AJs", "AJo" or "AJ".
+	 * @return array of CardSet
+	 */
+        public static CardSet[] parseNonPair(String cardPattern){
 		
-		if (suitedOrNot == 'o'){
-			char firstCard = cardPattern.charAt(0);
-			char secondCard = cardPattern.charAt(1);
-			Card[] firstPossibleCardArray = new Card[4];
-			Card[] secondPossibleCardArray = new Card[4];
-			int i = 0;
-			for (char c : SUITS) {
-				firstPossibleCardArray[i] =  CardUtil.buildCard(firstCard,c);
-				secondPossibleCardArray[i] = CardUtil.buildCard(secondCard,c);
-				i++;
-			}
-			i = 0;
-			CardSet tempHands[] = new CardSet[12];
-			for (Card c1 : firstPossibleCardArray){
-				for (Card c2 : secondPossibleCardArray) {
-					if (c1.suitOf().ordinal() != c2.suitOf().ordinal()){
-						tempHands[i++] = HandUtil.buildTwoCardHand(c1, c2);
-					}
-				}
-			}
-			return tempHands;
-		}
-		return null;
+            if (cardPattern.length() == 3) {
+                char suitedOrNot = cardPattern.charAt(2);
+            	if (suitedOrNot == 's'){ //AJs
+                    return parseNonPairSuited(cardPattern);
+                }
+			
+		if (suitedOrNot == 'o'){ //AJo
+                    return parseNonPairOffSuit(cardPattern);
+                }
+            }
+            
+            if (cardPattern.length() == 2) {//AJ
+                CardSet[] cs = parseNonPairSuited(cardPattern);
+                CardSet[] co = parseNonPairOffSuit(cardPattern);
+                CardSet[] cm = new CardSet[16];
+                System.arraycopy(cs, 0, cm, 0, cs.length);
+                System.arraycopy(co, 0, cm, 4, co.length);
+                return cm;
+            }
+            return null;
 	}
-	// return possible hands for formats like "AJo", "AJs","99"
- 	public static CardSet[] parsePatternSuit(String cardPattern) {
-		if (cardPattern.trim().length() == 2) { // pattern pair "99", "44"
-			return parsePair(cardPattern);
-		}
+        
+        /**
+	 * @param cardPattern input like "AJs".
+	 * @return array of CardSet
+	 */
+	public static CardSet[] parseNonPairSuited(String cardPattern){
+                CardSet tempHands[] = new CardSet[4];
+                int i = 0;
+                for (char c : SUITS) {
+                        tempHands[i++] = HandUtil.buildTwoCardHand(Character.toString(cardPattern.charAt(0)) + c, 
+                                        Character.toString(cardPattern.charAt(1)) + c);
+                }
+                return tempHands;
+	}
+	
+        /**
+	 * @param cardPattern input like "AJo".
+	 * @return array of CardSet
+	 */
+        public static CardSet[] parseNonPairOffSuit(String cardPattern){
 		
- 		if (cardPattern.trim().length() == 3) { // "AJo"
-			return parseNonPair(cardPattern);
-		}
-		throw new RuntimeException("Invalid parameter "+cardPattern);
+                char firstCard = cardPattern.charAt(0);
+                char secondCard = cardPattern.charAt(1);
+                Card[] firstPossibleCardArray = new Card[4];
+                Card[] secondPossibleCardArray = new Card[4];
+                int i = 0;
+                for (char c : SUITS) {
+                        firstPossibleCardArray[i] =  CardUtil.buildCard(firstCard,c);
+                        secondPossibleCardArray[i] = CardUtil.buildCard(secondCard,c);
+                        i++;
+                }
+                i = 0;
+                CardSet tempHands[] = new CardSet[12];
+                for (Card c1 : firstPossibleCardArray){
+                        for (Card c2 : secondPossibleCardArray) {
+                                if (c1.suitOf().ordinal() != c2.suitOf().ordinal()){
+                                        tempHands[i++] = HandUtil.buildTwoCardHand(c1, c2);
+                                }
+                        }
+                }
+                return tempHands;
+	}
+	/**
+         * @param String cardPattern formats like "AJo", "AJs","AJ" or "99".
+         * @return possible hands.
+         * 
+         */
+ 	public static CardSet[] parsePatternSuit(String cardPattern) {
+            cardPattern = cardPattern.trim();
+            if (cardPattern.length() == 2) { 
+                    if (cardPattern.charAt(0) == cardPattern.charAt(1)) {// pattern pair "99", "44".
+                        return parsePair(cardPattern);
+                    } else {//pattern AJ.
+                        return parseNonPair(cardPattern);
+                    }
+            }
+
+            if (cardPattern.length() == 3) { // "AJo" or "AJs".
+                    return parseNonPair(cardPattern);
+            }
+            throw new RuntimeException("Invalid parameter "+cardPattern);
  	}
 
 	public static boolean isSuit(char letter) {

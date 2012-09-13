@@ -1,8 +1,8 @@
 package mi.poker.calculation;
 
 import mi.poker.common.model.testbed.klaatu.Card;
-import mi.poker.common.model.testbed.klaatu.Card.Rank;
-import mi.poker.common.model.testbed.klaatu.Card.Suit;
+import mi.poker.common.model.testbed.klaatu.Rank;
+import mi.poker.common.model.testbed.klaatu.Suit;
 
 /**
  * @author m1
@@ -11,7 +11,7 @@ import mi.poker.common.model.testbed.klaatu.Card.Suit;
 public class CardUtil {
 
 	public static Card buildCard(char rank, char suit){
-		return new Card(Card.Rank.fromChar(rank),Card.Suit.fromChar(suit));
+		return new Card(Rank.fromChar(rank),Suit.fromChar(suit));
 	}
 	/**
 	 * @param rank 0 - 11
