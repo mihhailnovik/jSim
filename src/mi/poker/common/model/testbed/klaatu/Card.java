@@ -8,72 +8,6 @@ package mi.poker.common.model.testbed.klaatu;
  */
 public class Card implements Comparable<Card> {
     
-    /**
-     * The card ranks, from two (deuce) to ace.
-     */
-    public static enum Rank {
-        TWO, THREE, FOUR, FIVE, SIX, SEVEN,
-        EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE;
-        
-        /**
-         * @return the character in {@link #RANK_CHARS} denoting this rank.
-         */
-        public char toChar() {
-            return RANK_CHARS.charAt(this.ordinal());
-        }
-        
-        /**
-         * @param c a character present in {@link #RANK_CHARS} (case insensitive)
-         * @return the Rank denoted by character.
-         * @throws IllegalArgumentException if c not in {@link #RANK_CHARS}
-         */
-        public static Rank fromChar(char c) {
-            
-            int i = RANK_CHARS.indexOf(Character.toUpperCase(c));
-            if (i >= 0)
-                return  Rank.values()[i];
-            throw new IllegalArgumentException("'" + c + "'");
-        }
-    
-        /**
-         * @return the pip value of this Rank, ranging from 2 for
-         *          a <code>TWO</code> (deuce) to 14 for an <code>ACE</code>.
-         */
-        public int pipValue() {
-            return this.ordinal() + 2;
-        }
-        
-        public static final String RANK_CHARS = "23456789TJQKA";
-    }
-
-    /**
-     * The card suits, from club to spade.
-     */
-    public static enum Suit {CLUB, DIAMOND, HEART, SPADE;
-        
-        /**
-         * @return the character in {@link #SUIT_CHARS} denoting this suit.
-         */
-        public char toChar() {
-            return SUIT_CHARS.charAt(this.ordinal());
-        }
-        
-        /**
-         * @param c a character present in {@link #SUIT_CHARS} (case insensitive)
-         * @return the Suit denoted by the character.
-         * @throws IllegalArgumentException if c not in {@link #SUIT_CHARS}
-         */
-        public static Suit fromChar(char c) {
-            
-            int i = SUIT_CHARS.indexOf(Character.toLowerCase(c));
-            if (i >= 0)
-                return  Suit.values()[i];
-            throw new IllegalArgumentException("'" + c + "'");
-        }
-
-        public static final String SUIT_CHARS = "cdhs";
-    }
-
     private final Rank  rank;
     private final Suit  suit;
 
@@ -107,6 +41,21 @@ public class Card implements Comparable<Card> {
         }
     }
 
+/* Internal 52 cards storage
+ * index = 0 -> 2c
+ * index = 1 -> 3c
+ * ...
+ * index = 12 -> Ac
+ * index = 13 -> 2d
+ * ...
+ * index = 25 -> Ad
+ * index = 26 -> 2h
+ * ...
+ * index = 38 -> Ah
+ * index = 39 -> 2s
+ * ...
+ * index = 51 -> As
+ */
     private final static Card[] theCards = new Card[52];
     static {
         int i = 0;
@@ -183,8 +132,23 @@ public class Card implements Comparable<Card> {
         return this.rank == c.rank && this.suit == c.suit;
     }
     
-    /* result is a perfect hash code */
-    @Override
+ /**
+ * Returns the following i value depending on the card.
+ * i = 0  2c; i = 1  2d; i = 2  2h; i = 3  2s; 
+ * i = 4  3c; i = 5  3d; i = 6  3h; i = 7  3s; 
+ * i = 8  4c; i = 9  4d; i = 10 4h; i = 11 4s; 
+ * i = 12 5c; i = 13 5d; i = 14 5h; i = 15 5s; 
+ * i = 16 6c; i = 17 6d; i = 18 6h; i = 19 6s; 
+ * i = 20 7c; i = 21 7d; i = 22 7h; i = 23 7s; 
+ * i = 24 8c; i = 25 8d; i = 26 8h; i = 27 8s; 
+ * i = 28 9c; i = 29 9d; i = 30 9h; i = 31 9s; 
+ * i = 32 Tc; i = 33 Td; i = 34 Th; i = 35 Ts; 
+ * i = 36 Jc; i = 37 Jd; i = 38 Jh; i = 39 Js; 
+ * i = 40 Qc; i = 41 Qd; i = 42 Qh; i = 43 Qs; 
+ * i = 44 Kc; i = 45 Kd; i = 46 Kh; i = 47 Ks; 
+ * i = 48 Ac; i = 49 Ad; i = 50 Ah; i = 51 As;
+ */
+ @Override
     public int hashCode() {
         return rank.ordinal()*4 + suit.ordinal();
     }

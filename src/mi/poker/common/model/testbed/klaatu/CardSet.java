@@ -27,8 +27,8 @@ public class CardSet implements Set<Card> {
     private static final Random RANDOM = new Random();
     private static final CardSet madeDeck = new CardSet(52);
     static {
-        for (Card.Suit suit : Card.Suit.values())
-            for (Card.Rank rank : Card.Rank.values())
+        for (Suit suit : Suit.values())
+            for (Rank rank : Rank.values())
                 madeDeck.add(new Card(rank, suit));
     }
 
@@ -41,7 +41,7 @@ public class CardSet implements Set<Card> {
     }
 
     /**
-     * Return a shuffled 52-card deck.
+     * Return a shuffled 52-card deck (shuffling method with linear congruential formula).
      * @return a shuffled 52-card deck.
      */
     public static CardSet shuffledDeck() {
@@ -99,7 +99,8 @@ public class CardSet implements Set<Card> {
         return cards.containsAll(coll);
     }
 
-    @Override public boolean equals(Object that) {
+    @Override
+    public boolean equals(Object that) {
         if (!(that instanceof Set) || ((Set)that).size() != cards.size())
             return false;
         for (Card c : cards)
@@ -124,6 +125,11 @@ public class CardSet implements Set<Card> {
         return cards.iterator();
     }
 
+/**
+* @return <code>true</code> if this object o is already contained in CardSet and o is removed from the CardSet,
+* <code>false</code> if not.
+* Throws a RuntimeException i o is not of type Card.
+*/
     public boolean remove(Object o) {
     	if (!(o instanceof Card)){
     		throw new RuntimeException("You can remove only cards from deck! "+o.getClass()+" is not Card at all");
@@ -131,6 +137,12 @@ public class CardSet implements Set<Card> {
         return cards.remove(o);
     }
     
+/**
+* @return <code>true</code> if there is in the cardSet passed as a parameter 
+* a card that is already stored in the cardSet. All cards common to the cardSet parameter and the
+* present cardset are removed from the last one.
+* <code>false</code> if all cards in the cardSet passed as a parameter are not stored in the cardSet.
+*/
     public boolean remove(CardSet cardSet){
     	return cards.removeAll(cardSet.cards);
     }
@@ -139,6 +151,12 @@ public class CardSet implements Set<Card> {
         return cards.removeAll(coll);
     }
     
+    
+    /**
+     * Returns <code>true</code> if this CardSet has not changed as a result of the call.
+     * @return <code>true</code> if this CardSet has not changed as a result of the call; <code>false</code>
+     * if one of the Cards in the specified Collection were already present in this CardSet.
+     */
     public boolean removeAll(Card[] coll) {
     	boolean result = true;
     	for (Card c1 : coll){
